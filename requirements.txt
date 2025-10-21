@@ -1,0 +1,10 @@
+# Core dependencies
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Optional dependencies
+Pillow>=10.0.0        # For image download/processing
+validators>=0.22.0    # For URL validation
+
+# Python version requirement: Python 3.7+
