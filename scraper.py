@@ -19,6 +19,50 @@ from utils import (
     ensure_directory_exists
 )
 
+class OfferUpScraperError(Exception):
+    """Base exception for scraper errors"""
+    pass
+class InvalidURLError(OfferUpScraperError):
+    """Raised when URL is invalid"""
+    pass
+class FetchError(OfferUpScraperError):
+    """Raised when page fetch fails"""
+    pass
+class ParseError(OfferUpScraperError):
+    """Raised when data parsing fails"""
+    pass
+
+
+def validate_url(url: str) -> str:
+    """
+    Validate OfferUp URL format.
+    ARGS:
+        url: OfferUp listing URL to validate
+    RETURNS:
+        Validated URL string
+    RAISES:
+        InvalidURLError: if url is invalid
+    """
+    if not url or not isinstance(url, str):
+        raise InvalidURLError("URL must be a non-empty string")
+    
+    #Strip whitespace
+    url = url.strip()
+
+    #Check if invalid OfferUp URL
+    if not is_valid_offerup_url(url):
+        raise InvalidURLError(
+            f"Invalid OfferUp URL. Must be in format: "
+            f"https://offerup.com/item/detail/[listing-id]"
+        )
+    
+    listing_id = extract_listing_id(url)
+    print(f"Valid url. Listing ID: {listing_id}")
+
+    return url
+
+
+
 
 def scrape_listing(url: str, download_img: bool = False) -> Dict[str, Any]:
     """
