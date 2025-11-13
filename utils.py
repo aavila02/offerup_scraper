@@ -80,7 +80,7 @@ def ensure_directory_exists(directory: Path) -> None:
         directory: Path object for directory
     """
 
-    directory.mkdir(parents=True, exists_ok=True)
+    directory.mkdir(parents=True, exist_ok=True)
 
 
 
