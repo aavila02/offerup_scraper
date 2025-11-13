@@ -28,7 +28,97 @@ pip install -r requirements.txt
 
 ## Usage
 
-*(Coming soon - will be added in Phase 3)*
+### Basic Usage
+
+Scrape a listing (outputs JSON by default):
+```bash
+python scraper.py "https://offerup.com/item/detail/YOUR-LISTING-ID"
+```
+
+### Output Formats
+
+**JSON format (default):**
+```bash
+python scraper.py "https://offerup.com/item/detail/abc-123" --output json
+```
+
+**Human-readable text:**
+```bash
+python scraper.py "https://offerup.com/item/detail/abc-123" --output text
+```
+
+**CSV format (good for spreadsheets):**
+```bash
+python scraper.py "https://offerup.com/item/detail/abc-123" --output csv
+```
+
+### Download Images
+
+Download the first image:
+```bash
+python scraper.py "https://offerup.com/item/detail/abc-123" --download-image
+```
+
+Specify custom image directory:
+```bash
+python scraper.py "https://offerup.com/item/detail/abc-123" -d --image-dir ./my_images
+```
+
+### Save Output to File
+
+```bash
+# Save as JSON file
+python scraper.py "https://offerup.com/item/detail/abc-123" > listing.json
+
+# Save as text file
+python scraper.py "https://offerup.com/item/detail/abc-123" -o text > listing.txt
+
+# Save as CSV file
+python scraper.py "https://offerup.com/item/detail/abc-123" -o csv > listing.csv
+```
+
+### Verbose Mode
+
+Show scraping progress:
+```bash
+python scraper.py "https://offerup.com/item/detail/abc-123" --verbose
+```
+
+### All Options
+
+```bash
+python scraper.py --help
+```
+
+## Command-Line Options
+
+| Option | Short | Description | Default |
+|--------|-------|-------------|---------|
+| `url` | - | OfferUp listing URL (required) | - |
+| `--output` | `-o` | Output format: json, text, csv | json |
+| `--download-image` | `-d` | Download the first image | False |
+| `--image-dir` | - | Directory for downloaded images | downloaded_images |
+| `--verbose` | `-v` | Show scraping progress | False |
+| `--help` | `-h` | Show help message | - |
+| `--version` | - | Show version number | - |
+
+## Examples
+
+**Example 1: Quick scrape with text output**
+```bash
+python scraper.py "https://offerup.com/item/detail/abc-123" -o text
+```
+
+**Example 2: Scrape and download image**
+```bash
+python scraper.py "https://offerup.com/item/detail/abc-123" -d -v
+```
+
+**Example 3: Create CSV for multiple listings**
+```bash
+python scraper.py "https://offerup.com/item/detail/listing1" -o csv >> listings.csv
+python scraper.py "https://offerup.com/item/detail/listing2" -o csv >> listings.csv
+```
 
 ## Project Structure
 
