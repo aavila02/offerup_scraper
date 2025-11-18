@@ -3,6 +3,10 @@ requests>=2.31.0
 beautifulsoup4>=4.12.0
 lxml>=4.9.0
 
+# Flask API
+Flask>=3.0.0
+Flask-CORS>=4.0.0     # Allow React to call API
+
 # Optional dependencies
 Pillow>=10.0.0        # For image download/processing
 validators>=0.22.0    # For URL validation

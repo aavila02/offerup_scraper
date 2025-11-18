@@ -380,23 +380,215 @@ def scrape_listing(url: str, download_img: bool = False) -> Dict[str, Any]:
     return listing_data
 
 
-# Test function for development
-if __name__ == "__main__":
-    # Test with the example URL
-    test_url = input("Input URL: ")
+def format_output_json(data: Dict[str, Any]) -> str:
+    """Format output as pretty JSON."""
+    return json.dumps(data, indent=2, ensure_ascii=False)
+
+
+def format_output_text(data: Dict[str, Any]) -> str:
+    """Format output as human-readable text."""
+    output = []
+    output.append("\n" + "="*60)
+    output.append("LISTING DETAILS")
+    output.append("="*60)
+    
+    output.append(f"\nTitle: {data.get('title', 'N/A')}")
+    output.append(f"Price: ${data.get('price', 'N/A')}")
+    output.append(f"Location: {data.get('location', 'N/A')}")
+    output.append(f"Seller: {data.get('seller_name', 'N/A')}")
+    output.append(f"Listing ID: {data.get('listing_id', 'N/A')}")
+    
+    output.append(f"\nDescription:")
+    output.append("-" * 60)
+    output.append(data.get('description', 'N/A'))
+    
+    output.append(f"\nImage URL:")
+    output.append(data.get('first_image_url', 'N/A'))
+    
+    if data.get('downloaded_image_path'):
+        output.append(f"\nDownloaded Image:")
+        output.append(data.get('downloaded_image_path'))
+    
+    output.append("\n" + "="*60)
+    
+    return "\n".join(output)
+
+
+def format_output_csv(data: Dict[str, Any]) -> str:
+    """Format output as CSV (single row)."""
+    import csv
+    from io import StringIO
+    
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # Header row
+    headers = ['title', 'price', 'location', 'seller_name', 'listing_id', 
+               'description', 'first_image_url', 'downloaded_image_path']
+    writer.writerow(headers)
+    
+    # Data row
+    row = [
+        data.get('title', ''),
+        data.get('price', ''),
+        data.get('location', ''),
+        data.get('seller_name', ''),
+        data.get('listing_id', ''),
+        data.get('description', '').replace('\n', ' '),  # Remove newlines for CSV
+        data.get('first_image_url', ''),
+        data.get('downloaded_image_path', '')
+    ]
+    writer.writerow(row)
+    
+    return output.getvalue()
+
+
+def format_output(data: Dict[str, Any], output_format: str) -> str:
+    """
+    Format scraped data according to specified format.
+    
+    Args:
+        data: Scraped listing data
+        output_format: One of 'json', 'text', 'csv'
+        
+    Returns:
+        Formatted string output
+    """
+    if output_format == 'json':
+        return format_output_json(data)
+    elif output_format == 'text':
+        return format_output_text(data)
+    elif output_format == 'csv':
+        return format_output_csv(data)
+    else:
+        raise ValueError(f"Unknown output format: {output_format}")
+
+
+def main():
+    """Main CLI entry point."""
+    import argparse
+    
+    parser = argparse.ArgumentParser(
+        description='OfferUp Web Scraper - Extract listing data from OfferUp item pages',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Basic usage - scrape listing and display as JSON
+  python scraper.py https://offerup.com/item/detail/abc-123
+  
+  # Display as human-readable text
+  python scraper.py https://offerup.com/item/detail/abc-123 --output text
+  
+  # Download the image
+  python scraper.py https://offerup.com/item/detail/abc-123 --download-image
+  
+  # Save output to file
+  python scraper.py https://offerup.com/item/detail/abc-123 -o json > listing.json
+  
+  # CSV format with image download
+  python scraper.py https://offerup.com/item/detail/abc-123 -o csv -d
+
+For more information, visit: https://github.com/yourusername/offerup-scraper
+        """
+    )
+    
+    # Required argument
+    parser.add_argument(
+        'url',
+        type=str,
+        help='OfferUp listing URL (e.g., https://offerup.com/item/detail/...)'
+    )
+    
+    # Optional arguments
+    parser.add_argument(
+        '-o', '--output',
+        type=str,
+        choices=['json', 'text', 'csv'],
+        default='json',
+        help='Output format (default: json)'
+    )
+    
+    parser.add_argument(
+        '-d', '--download-image',
+        action='store_true',
+        help='Download the first image to local directory'
+    )
+    
+    parser.add_argument(
+        '--image-dir',
+        type=str,
+        default=config.DEFAULT_IMAGE_DIR,
+        help=f'Directory to save downloaded images (default: {config.DEFAULT_IMAGE_DIR})'
+    )
+    
+    parser.add_argument(
+        '-v', '--verbose',
+        action='store_true',
+        help='Enable verbose output (show scraping progress)'
+    )
+    
+    parser.add_argument(
+        '--version',
+        action='version',
+        version='OfferUp Scraper v1.0.0'
+    )
+    
+    # Parse arguments
+    args = parser.parse_args()
+    
+    # Suppress progress output if not verbose (except for errors)
+    import sys
+    if not args.verbose:
+        # Redirect stdout to null, keep stderr for errors
+        original_stdout = sys.stdout
+        sys.stdout = open('/dev/null', 'w') if sys.platform != 'win32' else open('nul', 'w')
     
     try:
-        result = scrape_listing(test_url, download_img=True)
+        # Scrape the listing
+        result = scrape_listing(
+            args.url,
+            download_img=args.download_image
+        )
         
-        print("\n--- Scraped Data ---")
-        print(f"Title: {result['title']}")
-        print(f"Price: {result['price']}")
-        print(f"Location: {result['location']}")
-        print(f"Seller: {result['seller_name']}")
-        print(f"\nDescription:\n{result['description'][:200]}...")
-        print(f"\nImage URL: {result['first_image_url']}")
+        # Restore stdout if it was suppressed
+        if not args.verbose:
+            sys.stdout.close()
+            sys.stdout = original_stdout
+        
+        # Format and output the results
+        formatted_output = format_output(result, args.output)
+        print(formatted_output)
+        
+        # Exit successfully
+        sys.exit(0)
         
     except OfferUpScraperError as e:
-        print(f"\n❌ Error: {e}")
+        # Restore stdout if it was suppressed
+        if not args.verbose:
+            sys.stdout.close()
+            sys.stdout = original_stdout
+        
+        print(f"\n❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+        
+    except KeyboardInterrupt:
+        # Handle Ctrl+C gracefully
+        if not args.verbose:
+            sys.stdout.close()
+            sys.stdout = original_stdout
+        
+        print("\n\n⚠ Scraping interrupted by user", file=sys.stderr)
+        sys.exit(130)
+        
     except Exception as e:
-        print(f"\n❌ Unexpected error: {e}")
+        # Restore stdout if it was suppressed
+        if not args.verbose:
+            sys.stdout.close()
+            sys.stdout = original_stdout
+        
+        print(f"\n❌ Unexpected error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
