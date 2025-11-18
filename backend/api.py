@@ -5,6 +5,7 @@ Wraps the scraper functionality in a REST API
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 import sys
 from pathlib import Path
 
@@ -34,7 +35,8 @@ def health_check():
     }), 200
 
 
-@app.route('/api/scrape', methods=['POST'])
+@app.route('/api/scrape', methods=['POST', 'OPTIONS'])
+@cross_origin(origins=["http://localhost:5173"])
 def scrape():
     """
     Scrape OfferUp listing endpoint.
